@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Threat Analysis</title>
+</head>
+
+<body>
+
+    <button class="back-btn" onclick="window.location.href='/'">BACK</button>
+
+    <div class="report-box">
+
+        <h2 id="level">---</h2>
+        <p id="score"></p>
+
+        <h3>AI SUMMARY</h3>
+        <p id="ai_summary"></p>
+
+        <h3>SENSOR CONFIDENCE</h3>
+        <div id="confidence"></div>
+
+        <h3>DETECTION LOG</h3>
+        <ul id="log"></ul>
+
+        <h3>BEHAVIOR ANALYSIS</h3>
+        <ul id="behavior"></ul>
+
+        <h3>FINAL VERDICT</h3>
+        <p id="verdict" class="final"></p>
+
+    </div>
+
+    <script src="/static/script.js"></script>
+
+</body>
+
+</html>

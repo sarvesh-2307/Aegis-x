@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS-X · SENSOR COVERAGE MAP</title>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/coverage.css">
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header class="cov-header">
+    <div class="cov-hdr-left">
+        <a href="/" class="cov-back-btn">← AEGIS-X</a>
+        <span class="cov-title">SENSOR COVERAGE PLANNER</span>
+        <span class="cov-sub">BLIND SPOT DETECTION &amp; OPTIMIZATION</span>
+    </div>
+    <div class="cov-hdr-right">
+        <div class="cov-stat-pill" id="pill-coverage">
+            <span class="csp-label">COVERAGE</span>
+            <span class="csp-val" id="stat-coverage">0%</span>
+        </div>
+        <div class="cov-stat-pill danger" id="pill-blind">
+            <span class="csp-label">BLIND SPOTS</span>
+            <span class="csp-val" id="stat-blind">0</span>
+        </div>
+        <div class="cov-stat-pill" id="pill-sensors">
+            <span class="csp-label">SENSORS</span>
+            <span class="csp-val" id="stat-sensors">0</span>
+        </div>
+        <div class="live-dot"></div>
+        <span style="color:#00ff88;font-size:12px;letter-spacing:2px;">LIVE</span>
+    </div>
+</header>
+
+<!-- ══════════════════ MAIN LAYOUT ══════════════════ -->
+<div class="cov-layout">
+
+    <!-- ─── LEFT PANEL ─── -->
+    <aside class="cov-left-panel">
+
+        <!-- MODE SELECT -->
+        <div class="lp-section">
+            <div class="lp-title">🛠 OPERATION MODE</div>
+            <div class="mode-btns">
+                <button class="mode-btn active" id="mode-sensor" onclick="setMode('sensor')">📍 ADD SENSOR</button>
+                <button class="mode-btn" id="mode-zone" onclick="setMode('zone')">🔲 DRAW ZONE</button>
+                <button class="mode-btn" id="mode-pan" onclick="setMode('pan')">🖐 PAN MAP</button>
+            </div>
+        </div>
+
+        <!-- SENSOR CONFIG -->
+        <div class="lp-section" id="sensor-config">
+            <div class="lp-title">⚙ SENSOR CONFIG</div>
+            <label class="lp-label">TYPE</label>
+            <select class="lp-select" id="cfg-type">
+                <option value="thermal">🌡 THERMAL</option>
+                <option value="radar">📡 RADAR</option>
+                <option value="vision">👁 VISION</option>
+                <option value="multi">⚡ MULTI-SENSOR</option>
+            </select>
+            <label class="lp-label">RANGE (meters)</label>
+            <div class="lp-range-row">
+                <input type="range" id="cfg-range" min="20" max="500" value="100" oninput="document.getElementById('cfg-range-val').innerText=this.value+'m'">
+                <span id="cfg-range-val" class="lp-range-val">100m</span>
+            </div>
+            <label class="lp-label">NAME / ID</label>
+            <input type="text" id="cfg-name" class="lp-input" placeholder="e.g. SENSOR-01" value="SENSOR-01">
+        </div>
+
+        <!-- ZONE ANALYSIS -->
+        <div class="lp-section">
+            <div class="lp-title">📊 ZONE ANALYSIS</div>
+            <div class="analysis-bar-row">
+                <span class="abr-lbl">COVERED</span>
+                <div class="abr-track">
+                    <div class="abr-fill covered" id="bar-covered" style="width:0%"></div>
+                </div>
+                <span class="abr-val" id="val-covered">0%</span>
+            </div>
+            <div class="analysis-bar-row">
+                <span class="abr-lbl">BLIND</span>
+                <div class="abr-track">
+                    <div class="abr-fill blind" id="bar-blind" style="width:0%"></div>
+                </div>
+                <span class="abr-val" id="val-blind">0%</span>
+            </div>
+            <div class="analysis-bar-row">
+                <span class="abr-lbl">OVERLAP</span>
+                <div class="abr-track">
+                    <div class="abr-fill overlap" id="bar-overlap" style="width:0%"></div>
+                </div>
+                <span class="abr-val" id="val-overlap">0%</span>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="lp-section">
+            <div class="lp-title">⚡ ACTIONS</div>
+            <button class="action-btn primary" onclick="analyzeBlindSpots()">🔍 ANALYZE BLIND SPOTS</button>
+            <button class="action-btn success" onclick="autoSuggestSensors()">💡 AUTO-SUGGEST SENSORS</button>
+            <button class="action-btn warn" onclick="clearZone()">🗑 CLEAR ZONE</button>
+            <button class="action-btn danger" onclick="clearAll()">💥 CLEAR ALL</button>
+        </div>
+
+        <!-- INSTRUCTIONS -->
+        <div class="lp-section">
+            <div class="lp-title">📖 HOW TO USE</div>
+            <div class="instruction-list">
+                <div class="inst-step"><span class="inst-num">1</span>Pick <b>DRAW ZONE</b> → click map to define perimeter</div>
+                <div class="inst-step"><span class="inst-num">2</span>Pick <b>ADD SENSOR</b> → click to place sensors</div>
+                <div class="inst-step"><span class="inst-num">3</span>Click <b>ANALYZE</b> to find blind spots</div>
+                <div class="inst-step"><span class="inst-num">4</span>Click <b>AUTO-SUGGEST</b> for optimal placements</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ─── MAP ─── -->
+    <div class="cov-map-wrap">
+        <div id="map"></div>
+
+        <!-- MAP OVERLAY BADGE -->
+        <div class="map-mode-badge" id="map-mode-badge">📍 CLICK TO PLACE SENSOR</div>
+
+        <!-- COVERAGE LEGEND -->
+        <div class="map-legend">
+            <div class="leg-item"><span class="leg-dot" style="background:#00ff88;"></span> COVERED</div>
+            <div class="leg-item"><span class="leg-dot" style="background:#ff3333;"></span> BLIND SPOT</div>
+            <div class="leg-item"><span class="leg-dot" style="background:#ffaa00;"></span> OVERLAP</div>
+            <div class="leg-item"><span class="leg-dot" style="background:#44aaff;"></span> SUGGESTED</div>
+        </div>
+    </div>
+
+    <!-- ─── RIGHT PANEL ─── -->
+    <aside class="cov-right-panel">
+
+        <!-- SENSOR LIST -->
+        <div class="rp-section">
+            <div class="rp-title">📡 DEPLOYED SENSORS</div>
+            <div id="sensor-list" class="sensor-list">
+                <div class="sensor-empty">No sensors deployed.<br>Use ADD SENSOR mode.</div>
+            </div>
+        </div>
+
+        <!-- BLIND SPOT LIST -->
+        <div class="rp-section rp-flex">
+            <div class="rp-title">🔴 BLIND SPOT REPORT</div>
+            <div id="blind-list" class="blind-list">
+                <div class="blind-empty">Run analysis first.</div>
+            </div>
+        </div>
+
+        <!-- SUGGESTIONS -->
+        <div class="rp-section">
+            <div class="rp-title">💡 AI SUGGESTIONS</div>
+            <div id="suggestion-list" class="suggestion-list">
+                <div class="suggest-empty">Run auto-suggest to see recommendations.</div>
+            </div>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="rp-section">
+            <div class="rp-title">📤 EXPORT</div>
+            <button class="action-btn primary" onclick="exportReport()" style="width:100%;margin-top:6px;">📋 EXPORT REPORT (JSON)</button>
+        </div>
+
+    </aside>
+
+</div><!-- /cov-layout -->
+
+<script src="/static/coverage.js"></script>
+</body>
+</html>

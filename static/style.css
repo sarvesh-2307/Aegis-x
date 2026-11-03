@@ -1,0 +1,812 @@
+/* ============================================================
+   AEGIS-X  ·  Iron Man HUD Theme  ·  v9
+   ============================================================ */
+
+/* ----- RESET & BASE ----- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #0a0000;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    color: #ffd700;
+}
+
+/* ----- HEADER ----- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 52px;
+    padding: 0 24px;
+    background: rgba(20,0,0,0.85);
+    border-bottom: 2px solid rgba(255,51,51,0.6);
+    box-shadow: 0 2px 20px rgba(255,0,0,0.2);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+}
+
+.hdr-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #ff3333;
+    letter-spacing: 6px;
+    text-shadow: 0 0 20px #ff0000;
+}
+
+.hdr-sub {
+    font-size: 10px;
+    color: rgba(255,215,0,0.5);
+    letter-spacing: 3px;
+    margin-left: 16px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #00ff88;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+.live-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 10px #00ff88;
+    animation: blink-dot 1s infinite alternate;
+}
+
+@keyframes blink-dot {
+    from { opacity: 0.3; }
+    to   { opacity: 1; }
+}
+
+/* ----- GRID ----- */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    width: 100vw;
+    height: calc(100vh - 52px);
+    gap: 6px;
+    padding: 6px;
+    background: #080000;
+}
+
+/* ----- BOX (each panel tile) ----- */
+.box {
+    position: relative;
+    border: 1px solid rgba(255,51,51,0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(20,0,0,0.55);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6), inset 0 0 18px rgba(255,0,0,0.08);
+    transition: transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275),
+                box-shadow 0.35s, border-color 0.35s;
+}
+
+.box:hover {
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: 0 16px 40px rgba(255,0,0,0.35),
+                inset 0 0 30px rgba(255,215,0,0.15);
+    border-color: rgba(255,215,0,0.6);
+    z-index: 10;
+}
+
+/* Scan line on hover */
+.box::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: rgba(255,215,0,0.5);
+    transform: translateY(-100%);
+    pointer-events: none;
+    z-index: 5;
+}
+.box:hover::before {
+    animation: scan-line 1.8s linear infinite;
+}
+@keyframes scan-line {
+    0%   { transform: translateY(-100%); opacity: 0.7; }
+    100% { transform: translateY(10000%); opacity: 0; }
+}
+
+/* ----- ZOOM ACTIVE STATE ----- */
+#grid.zoom-active .box {
+    opacity: 0; pointer-events: none;
+    transform: scale(0.9);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+#grid.zoom-active .box.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    position: fixed;
+    inset: 0;          /* top:0 right:0 bottom:0 left:0 */
+    z-index: 900;
+    border-radius: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    border: none;
+    background: #050000;
+    box-shadow: none;
+}
+
+/* ----- PANEL WRAP (split left feed / right data) ----- */
+.panel-wrap {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* ----- LIVE FEED (left half when split, full when no data) ----- */
+.live-feed {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.live-feed img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.88;
+    transition: opacity 0.3s;
+    display: block;
+}
+
+.box.active .live-feed img { object-fit: contain; opacity: 1; }
+
+/* ----- PANEL LABEL ----- */
+.panel-label {
+    position: absolute;
+    bottom: 12px; left: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #ffd700;
+    background: rgba(10,0,0,0.8);
+    border: 1px solid rgba(255,51,51,0.7);
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+/* ----- DATA PANEL (right side, hidden by default) ----- */
+.data-panel {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: rgba(12,0,0,0.92);
+    border-left: 2px solid #ffd700;
+    box-shadow: -8px 0 24px rgba(255,0,0,0.25);
+    transition: width 0.4s cubic-bezier(0.25,0.8,0.25,1),
+                min-width 0.4s;
+    overflow-y: auto;
+}
+
+.box.active.data-open .data-panel {
+    width: 420px;
+    min-width: 320px;
+    overflow-y: auto;
+}
+
+.dp-header {
+    padding: 18px 20px 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ff3333;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 12px #ff0000;
+    border-bottom: 1px solid rgba(255,215,0,0.3);
+    flex-shrink: 0;
+}
+
+/* ----- ACCORDION ----- */
+.acc-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 20px;
+    background: rgba(20,0,0,0.4);
+    border: none;
+    border-bottom: 1px solid rgba(255,51,51,0.3);
+    color: #ffd700;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s;
+    flex-shrink: 0;
+}
+
+.acc-btn:hover {
+    background: rgba(255,215,0,0.08);
+    border-bottom-color: #ffd700;
+}
+
+.acc-btn.open {
+    background: rgba(255,51,51,0.18);
+    border-bottom-color: #ff3333;
+}
+
+.acc-icon { font-size: 18px; color: #ff3333; transition: transform 0.3s; }
+.acc-btn.open .acc-icon { transform: rotate(45deg); color: #ffd700; }
+
+.acc-body {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    background: rgba(0,0,0,0.6);
+    border-left: 3px solid #ff3333;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+}
+
+.acc-btn.open + .acc-body {
+    max-height: 300px;
+    padding: 14px 20px;
+    margin-bottom: 4px;
+    overflow-y: auto;
+}
+
+/* ----- METRIC BOXES ----- */
+.metric-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,215,0,0.55);
+    text-transform: uppercase;
+}
+
+.metric-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255,215,0,0.5);
+}
+
+.metric-val.big-val { font-size: 32px; color: #ffd700; text-shadow: 0 0 15px #ffd700; }
+.metric-unit { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+
+/* ----- STATUS BADGES ----- */
+.badge-status {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+}
+.badge-status.detected { background: #cc0000; border-color: #ff3333; box-shadow: 0 0 12px #ff0000; }
+.badge-status.clear    { background: #006600; border-color: #00cc00; box-shadow: 0 0 12px #00cc00; }
+
+/* ----- DETECTION LIST / LOG ----- */
+.detection-list { list-style: square; padding-left: 20px; margin-top: 8px; }
+.detection-list li { color: #ffd700; margin-bottom: 6px; font-size: 13px; }
+
+.log-scroller { max-height: 180px; overflow-y: auto; }
+.log-list { list-style: none; padding: 0; }
+.log-list li {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,51,51,0.2);
+    font-size: 12px;
+    color: rgba(255,215,0,0.8);
+}
+
+.analysis-text {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #eee;
+}
+
+/* ----- RADAR STYLES ----- */
+.radar-stage {
+    position: relative;
+    width: min(80%, 360px);
+    aspect-ratio: 1;
+}
+
+.radar-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px dashed rgba(255,215,0,0.35);
+}
+.radar-ring.r1 { inset: 0; border-color: rgba(255,51,51,0.7); border-width: 2px; box-shadow: 0 0 20px rgba(255,0,0,0.3); }
+.radar-ring.r2 { inset: 25%; border-color: rgba(255,215,0,0.4); }
+.radar-ring.r3 { inset: 50%; border-color: rgba(255,215,0,0.5); }
+
+.radar-cross {
+    position: absolute;
+    background: rgba(255,215,0,0.2);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+}
+.radar-cross.h { width: 100%; height: 1px; }
+.radar-cross.v { width: 1px; height: 100%; }
+
+.radar-sweep-line {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        rgba(255,215,0,0.85) 0deg,
+        rgba(255,51,51,0.45) 45deg,
+        transparent 90deg
+    );
+    animation: sweep 2.5s linear infinite;
+    mix-blend-mode: screen;
+}
+@keyframes sweep {
+    to { transform: rotate(360deg); }
+}
+
+#target-dot {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ff4444;
+    box-shadow: 0 0 14px #ff0000, 0 0 28px rgba(255,0,0,0.6);
+    transform: translate(-50%, -50%);
+    display: none;
+    animation: ping 1s infinite alternate;
+}
+@keyframes ping {
+    from { opacity: 0.5; transform: translate(-50%,-50%) scale(0.85); }
+    to   { opacity: 1;   transform: translate(-50%,-50%) scale(1.2); }
+}
+
+/* ----- THREAT PANEL (full screen, no split) ----- */
+.threat-main {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 50px;
+    background: radial-gradient(ellipse at center, rgba(40,0,0,0.7) 0%, #050000 100%);
+    overflow-y: auto;
+    gap: 20px;
+}
+
+.threat-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: rgba(255,215,0,0.6);
+    text-transform: uppercase;
+}
+
+.threat-level-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #ff3333;
+    text-shadow: 0 0 30px #ff0000, 0 0 60px rgba(255,0,0,0.4);
+    animation: threat-glow 1.5s ease-in-out infinite alternate;
+}
+@keyframes threat-glow {
+    from { text-shadow: 0 0 20px #ff0000; }
+    to   { text-shadow: 0 0 40px #ff0000, 0 0 80px rgba(255,51,0,0.5); }
+}
+
+/* Score bar */
+.score-wrap {
+    width: 100%;
+    max-width: 650px;
+    background: rgba(20,0,0,0.7);
+    border: 1px solid rgba(255,51,51,0.4);
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255,0,0,0.15);
+}
+.score-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(255,215,0,0.5);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.bar-track {
+    width: 100%;
+    height: 22px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 11px;
+    overflow: hidden;
+    position: relative;
+}
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #00cc00;
+    border-radius: 11px;
+    transition: width 0.6s ease, background 0.6s ease;
+    box-shadow: 0 0 12px currentColor;
+}
+.score-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    color: #ffd700;
+    margin-top: 10px;
+    text-align: right;
+}
+
+/* Threat grid cards */
+.threat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 650px;
+}
+.tg-card {
+    background: rgba(20,0,0,0.6);
+    border: 1px solid rgba(255,51,51,0.35);
+    border-radius: 6px;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+}
+.tg-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #ff3333;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,215,0,0.2);
+    padding-bottom: 6px;
+}
+.tg-body {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #eee;
+}
+
+/* ----- FLOATING BUTTONS ----- */
+.btn-back, .btn-toggle {
+    position: absolute;
+    z-index: 950;
+    padding: 8px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    display: none;           /* hidden until zoomed */
+    transition: all 0.3s;
+}
+
+.btn-back {
+    top: 16px; left: 16px;
+    background: rgba(10,0,0,0.85);
+    border: 1px solid rgba(255,215,0,0.7);
+    color: #ffd700;
+}
+.btn-back:hover { background: #ffd700; color: #000; box-shadow: 0 0 18px #ffd700; }
+
+.btn-toggle {
+    top: 16px; right: 16px;
+    background: rgba(10,0,0,0.85);
+    border: 1px solid rgba(255,51,51,0.7);
+    color: #ff3333;
+}
+.btn-toggle:hover { background: #ff3333; color: #000; box-shadow: 0 0 18px #ff3333; }
+
+/* Show buttons only when zoomed into the active box */
+#grid.zoom-active .box.active .btn-back   { display: block; }
+#grid.zoom-active .box.active .btn-toggle { display: block; }
+
+/* ----- SENSOR BAR GRAPH ----- */
+.sensor-bars-wrap {
+    width: 100%;
+    max-width: 650px;
+    background: rgba(20,0,0,0.65);
+    border: 1px solid rgba(255,51,51,0.35);
+    border-radius: 8px;
+    padding: 18px 24px;
+    box-shadow: 0 0 18px rgba(255,0,0,0.12);
+}
+
+.sb-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ff3333;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255,215,0,0.2);
+    padding-bottom: 8px;
+}
+
+.sb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.sb-row:last-child { margin-bottom: 0; }
+
+.sb-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,215,0,0.7);
+    width: 62px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.sb-track {
+    flex: 1;
+    height: 18px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+}
+
+.sb-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 9px;
+    background: linear-gradient(90deg, #ff3300, #ffaa00);
+    box-shadow: 0 0 10px #ff6600;
+    transition: width 0.6s ease, background 0.6s ease, box-shadow 0.6s ease;
+}
+
+/* Color class overrides per sensor */
+.sb-fill.thermal { background: linear-gradient(90deg, #ff4400, #ff8800); box-shadow: 0 0 10px #ff5500; }
+.sb-fill.radar   { background: linear-gradient(90deg, #0088ff, #00ccff); box-shadow: 0 0 10px #0099ff; }
+.sb-fill.vision  { background: linear-gradient(90deg, #00aa44, #00ff88); box-shadow: 0 0 10px #00cc66; }
+
+.sb-pct {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffd700;
+    width: 38px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ----- SPARKLINE CHART ----- */
+.sparkline-wrap {
+    width: 100%;
+    max-width: 650px;
+    background: rgba(20,0,0,0.65);
+    border: 1px solid rgba(255,51,51,0.35);
+    border-radius: 8px;
+    padding: 18px 24px;
+    box-shadow: 0 0 18px rgba(255,0,0,0.12);
+}
+
+#spark-canvas {
+    width: 100%;
+    height: 80px;
+    display: block;
+    border-radius: 4px;
+}
+
+/* ----- SCROLLBAR ----- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #ff3333; border-radius: 3px; }
+
+/* ===== FEATURE BUTTONS ===== */
+.header-center {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+}
+
+.feature-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.8), rgba(30, 0, 0, 0.8));
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.feature-btn:hover {
+    background: linear-gradient(135deg, rgba(50, 20, 0, 0.9), rgba(40, 0, 0, 0.9));
+    border-color: #ffd700;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.5), inset 0 0 8px rgba(255, 215, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.feature-btn.active {
+    background: linear-gradient(135deg, rgba(100, 60, 0, 0.9), rgba(80, 20, 0, 0.9));
+    border-color: #ff8800;
+    box-shadow: 0 0 20px rgba(255, 136, 0, 0.7), inset 0 0 12px rgba(255, 136, 0, 0.2);
+    color: #ff8800;
+}
+
+/* ===== EMERGENCY BUTTON ===== */
+.btn-emergency {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(200, 0, 0, 0.9), rgba(150, 0, 0, 0.9));
+    border: 2px solid #ff0000;
+    color: #ffffff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 16px rgba(255, 0, 0, 0.6), inset 0 0 8px rgba(255, 0, 0, 0.3);
+    animation: btn-emergency-pulse 2s infinite;
+    margin-left: 20px;
+}
+
+.btn-emergency:hover {
+    background: linear-gradient(135deg, rgba(255, 0, 0, 1), rgba(200, 0, 0, 1));
+    border-color: #ff3333;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.9), inset 0 0 12px rgba(255, 0, 0, 0.5), 
+                0 0 50px rgba(255, 0, 0, 0.4);
+    transform: scale(1.08);
+}
+
+.btn-emergency.triggered {
+    animation: btn-emergency-trigger 0.5s ease;
+}
+
+@keyframes btn-emergency-pulse {
+    0%, 100% { box-shadow: 0 0 16px rgba(255, 0, 0, 0.6), inset 0 0 8px rgba(255, 0, 0, 0.3); }
+    50% { box-shadow: 0 0 24px rgba(255, 0, 0, 0.8), inset 0 0 12px rgba(255, 0, 0, 0.4); }
+}
+
+@keyframes btn-emergency-trigger {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* ===== EMERGENCY MODE OVERLAY ===== */
+.emergency-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 0, 0, 0.15);
+    border: 3px solid #ff0000;
+    z-index: 950;
+    pointer-events: none;
+    animation: emergency-flash 0.3s ease;
+}
+
+@keyframes emergency-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ----- ALWAYS OPEN RIGHT PANEL ----- */
+.box.data-always-open .data-panel {
+    width: 320px !important;
+    min-width: 280px !important;
+    overflow-y: auto;
+}
+
+/* Hide toggle button in always-open mode */
+.box.data-always-open .btn-toggle {
+    display: none;
+}
+
+/* Adjust live feed when panel is always open */
+.box.data-always-open .live-feed {
+    flex: 1;
+}
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== ALERT HOVER EFFECT ===== */
+.alert-hover {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(255, 0, 0, 0.95);
+    color: #ffd700;
+    padding: 24px 40px;
+    border: 3px solid #ffff00;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-align: center;
+    z-index: 999;
+    box-shadow: 0 0 40px #ff0000, inset 0 0 20px rgba(255,255,0,0.3);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    font-family: 'Orbitron', sans-serif;
+    animation: alert-pulse 0.5s ease;
+}
+
+.alert-hover.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes alert-pulse {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* ===== NOTIFICATION TOAST ===== */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 51, 0, 0.95);
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+    padding: 16px 24px;
+    max-width: 400px;
+    z-index: 998;
+    box-shadow: 0 0 24px rgba(0, 255, 136, 0.5);
+    opacity: 0;
+    transform: translateX(500px);
+    transition: all 0.3s ease;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notif-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #00ff88;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.notif-msg {
+    font-size: 12px;
+    color: #ffd700;
+    word-wrap: break-word;
+}
+
+}
+}

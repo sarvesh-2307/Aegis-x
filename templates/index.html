@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS-X SYSTEM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=9">
+</head>
+<body>
+
+    <!-- ======= HEADER ======= -->
+    <header class="header">
+        <div class="header-left">
+            <span class="hdr-title">AEGIS-X</span>
+            <span class="hdr-sub">MULTI-SENSOR INTELLIGENCE SYSTEM</span>
+        </div>
+        <div class="header-center">
+            <button class="feature-btn" id="btn-record" onclick="toggleRecord()" title="Toggle Recording">⏹ RECORD</button>
+            <button class="feature-btn" id="btn-snapshot" onclick="takeSnapshot()" title="Take Snapshot">📸 SNAPSHOT</button>
+            <button class="feature-btn" id="btn-alert" onclick="toggleAlert()" title="Toggle Alert">🔔 ALERT</button>
+        </div>
+        <div class="header-right">
+            <div class="live-dot"></div>
+            <span id="status-txt">● LIVE</span>
+            <button class="feature-btn" id="btn-logs" onclick="viewLogs()" title="View Intruder Log">📋 LOGS</button>
+            <button class="feature-btn" id="btn-download" onclick="downloadDataset()" title="Download Dataset">📥 DATASET</button>
+            <button class="btn-emergency" id="btn-emergency" onclick="triggerEmergency()">⚠ EMERGENCY</button>
+        </div>
+    </header>
+
+    <!-- ======= 4-PANEL GRID ======= -->
+    <div class="grid" id="grid">
+
+        <!-- ===== THERMAL ===== -->
+        <div class="box" id="box-thermal">
+            <button class="btn-back" onclick="exitZoom(event)">← BACK</button>
+
+            <div class="panel-wrap">
+                <!-- LEFT: LIVE FEED -->
+                <div class="live-feed">
+                    <img src="/thermal_feed" alt="Thermal Feed">
+                    <div class="panel-label">THERMAL VISION</div>
+                </div>
+                <!-- RIGHT: DATA PANEL -->
+                <div class="data-panel" id="thermal-data">
+                    <div class="dp-header">THERMAL ANALYSIS</div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">TEMP INFO <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="metric-box">
+                            <span class="metric-label">CURRENT TEMP</span>
+                            <span class="metric-val" id="th-temp">---</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">AMBIENT</span>
+                            <span class="metric-val" id="th-ambient">---</span>
+                        </div>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">OBJECT PROFILE <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="metric-box">
+                            <span class="metric-label">AREA (px²)</span>
+                            <span class="metric-val" id="th-area">---</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">POSTURE</span>
+                            <span class="metric-val" id="th-posture">---</span>
+                        </div>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">DISTANCE ANALYSIS <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="dist-display">
+                            <span class="metric-label">PROXIMITY</span>
+                            <span class="metric-val big-val" id="th-dist">---</span>
+                        </div>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">ENV ANALYSIS <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="analysis-text" id="th-env">Awaiting scan data...</div>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">OBJECT ANALYSIS <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="analysis-text" id="th-obj">Scanning...</div>
+                    </div>
+                </div><!-- /data-panel -->
+            </div><!-- /panel-wrap -->
+        </div><!-- /box-thermal -->
+
+        <!-- ===== RADAR ===== -->
+        <div class="box" id="box-radar">
+            <button class="btn-back" onclick="exitZoom(event)">← BACK</button>
+
+            <div class="panel-wrap">
+                <!-- LEFT: LIVE RADAR -->
+                <div class="live-feed">
+                    <div class="radar-stage">
+                        <div class="radar-ring r3"></div>
+                        <div class="radar-ring r2"></div>
+                        <div class="radar-ring r1"></div>
+                        <div class="radar-sweep-line"></div>
+                        <div class="radar-cross h"></div>
+                        <div class="radar-cross v"></div>
+                        <div id="target-dot"></div>
+                    </div>
+                    <div class="panel-label">RADAR SWEEP</div>
+                </div>
+                <!-- RIGHT: DATA PANEL -->
+                <div class="data-panel" id="radar-data">
+                    <div class="dp-header">RADAR INTELLIGENCE</div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">DISTANCE <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="metric-box">
+                            <span class="metric-label">RANGE</span>
+                            <span class="metric-val big-val" id="r-dist">---</span>
+                            <span class="metric-unit">meters</span>
+                        </div>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">MOTION DETECTION <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="metric-box">
+                            <span class="metric-label">MACRO MOTION</span>
+                            <span class="badge-status" id="r-motion">---</span>
+                        </div>
+                        <div class="metric-box" style="margin-top:10px;">
+                            <span class="metric-label">MICRO MOTION</span>
+                            <span class="badge-status" id="r-micro">---</span>
+                        </div>
+                        <div class="metric-box" style="margin-top:10px;">
+                            <span class="metric-label">PRESENCE</span>
+                            <span class="badge-status" id="r-presence">---</span>
+                        </div>
+                    </div>
+                </div><!-- /data panel -->
+            </div>
+        </div><!-- /box-radar -->
+
+        <!-- ===== NIGHT VISION ===== -->
+        <div class="box" id="box-vision">
+            <button class="btn-back" onclick="exitZoom(event)">← BACK</button>
+
+            <div class="panel-wrap">
+                <div class="live-feed">
+                    <img src="/vision_feed" alt="Vision Feed">
+                    <div class="panel-label">NIGHT VISION</div>
+                </div>
+                <div class="data-panel" id="vision-data">
+                    <div class="dp-header">VISION INTELLIGENCE</div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">OBJECT BASE DETECTION <span class="acc-icon">+</span></button>
+                    <div class="acc-body">
+                        <div class="metric-box">
+                            <span class="metric-label">DETECTIONS</span>
+                            <span class="metric-val" id="v-count">0</span>
+                        </div>
+                        <ul class="detection-list" id="v-items"></ul>
+                    </div>
+
+                    <button class="acc-btn" onclick="toggleAcc(this)">DETECTION LOG <span class="acc-icon">+</span></button>
+                    <div class="acc-body log-scroller">
+                        <ul class="log-list" id="v-log"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== THREAT ===== -->
+        <div class="box" id="box-threat">
+            <button class="btn-back" onclick="exitZoom(event)">← BACK</button>
+            <div class="panel-wrap">
+                <!-- THREAT IS FULL PANEL, NO SPLIT -->
+                <div class="threat-main" id="threat-panel">
+                    <div class="threat-title">THREAT ASSESSMENT</div>
+                    <div class="threat-level-badge" id="t-level">---</div>
+
+                    <div class="score-wrap">
+                        <div class="score-label">THREAT SCORE</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="t-bar"></div>
+                        </div>
+                        <div class="score-num" id="t-score">0 / 100</div>
+                    </div>
+
+                    <!-- ===== SENSOR BAR GRAPH ===== -->
+                    <div class="sensor-bars-wrap">
+                        <div class="sb-title">📊 SENSOR CONFIDENCE</div>
+                        <div class="sb-row">
+                            <span class="sb-label">THERMAL</span>
+                            <div class="sb-track">
+                                <div class="sb-fill" id="bar-thermal"></div>
+                            </div>
+                            <span class="sb-pct" id="pct-thermal">0%</span>
+                        </div>
+                        <div class="sb-row">
+                            <span class="sb-label">RADAR</span>
+                            <div class="sb-track">
+                                <div class="sb-fill" id="bar-radar"></div>
+                            </div>
+                            <span class="sb-pct" id="pct-radar">0%</span>
+                        </div>
+                        <div class="sb-row">
+                            <span class="sb-label">VISION</span>
+                            <div class="sb-track">
+                                <div class="sb-fill" id="bar-vision"></div>
+                            </div>
+                            <span class="sb-pct" id="pct-vision">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- ===== SPARKLINE HISTORY ===== -->
+                    <div class="sparkline-wrap">
+                        <div class="sb-title">📈 THREAT HISTORY (LAST 20)</div>
+                        <canvas id="spark-canvas" width="650" height="80"></canvas>
+                    </div>
+
+                    <div class="threat-grid">
+                        <div class="tg-card">
+                            <div class="tg-title">🕐 TIMESTAMP</div>
+                            <div class="tg-body" id="t-timestamp">--:--:--</div>
+                        </div>
+                        <div class="tg-card">
+                            <div class="tg-title">🧠 AI SUMMARY</div>
+                            <div class="tg-body" id="t-summary">Awaiting...</div>
+                        </div>
+                        <div class="tg-card">
+                            <div class="tg-title">📡 CONFIDENCE</div>
+                            <div class="tg-body" id="t-confidence">Awaiting...</div>
+                        </div>
+                        <div class="tg-card" style="grid-column: span 3;">
+                            <div class="tg-title">📊 SENSOR REPORTS</div>
+                            <div class="tg-body" id="t-sensor-reports" style="font-size:10px;">Scanning...</div>
+                        </div>
+                        <div class="tg-card" style="grid-column: span 3;">
+                            <div class="tg-title">📋 DETECTION EVIDENCE</div>
+                            <div class="tg-body log-scroller" id="t-log">---</div>
+                        </div>
+                        <div class="tg-card" style="grid-column: span 3;">
+                            <div class="tg-title">🎯 BEHAVIOR ANALYSIS</div>
+                            <div class="tg-body" id="t-behavior">---</div>
+                        </div>
+                        <div class="tg-card" style="grid-column: span 3;">
+                            <div class="tg-title">⚖️ VERDICT</div>
+                            <div class="tg-body" id="t-verdict" style="color:#00ff88; font-weight:bold;">No threat detected</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /grid -->
+
+    <script src="/static/script.js?v=9"></script>
+</body>
+</html>

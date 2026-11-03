@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS-X — Intruder Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; background: #0a0000; color: #ffd700; font-family: 'Share Tech Mono', monospace; }
+        
+        .header { background: rgba(20,0,0,0.9); border-bottom: 2px solid #ff3333; padding: 20px 30px; box-shadow: 0 2px 20px rgba(255,0,0,0.2); }
+        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 28px; color: #ff3333; letter-spacing: 4px; text-shadow: 0 0 20px #ff0000; }
+        .header p { font-size: 12px; color: rgba(255,215,0,0.6); letter-spacing: 2px; margin-top: 5px; }
+        
+        .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
+        
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .controls input, .controls select { padding: 8px 12px; background: rgba(20,0,0,0.8); border: 1px solid #ff3333; color: #ffd700; font-family: inherit; cursor: pointer; }
+        .controls input:focus, .controls select:focus { outline: none; box-shadow: 0 0 10px #ff3333; }
+        .controls button { padding: 8px 16px; background: #ff3333; color: #000; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .controls button:hover { background: #ff6666; box-shadow: 0 0 15px #ff3333; }
+        
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-card { background: rgba(20,0,0,0.8); border: 1px solid #ffd700; padding: 15px; border-radius: 6px; }
+        .summary-card-title { color: #ffd700; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        .summary-card-value { font-size: 28px; font-weight: bold; color: #00ff88; }
+        
+        .events-container { max-height: calc(100vh - 350px); overflow-y: auto; }
+        
+        .event { background: rgba(20,0,0,0.85); border: 1px solid rgba(255,51,51,0.4); border-radius: 6px; padding: 15px; margin-bottom: 12px; }
+        .event:hover { border-color: #ff3333; box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+        
+        .event-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .event-title { font-size: 14px; font-weight: bold; color: #00ff88; text-transform: uppercase; letter-spacing: 1px; }
+        .event-threat { padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+        .threat-critical { background: #ff0000; color: #fff; }
+        .threat-high { background: #ff6600; color: #fff; }
+        .threat-medium { background: #ffaa00; color: #000; }
+        .threat-low { background: #ffdd00; color: #000; }
+        .threat-none { background: #00cc44; color: #000; }
+        
+        .event-timestamp { font-size: 11px; color: #ffd700; letter-spacing: 1px; }
+        .event-score { font-size: 13px; color: #00ff88; font-weight: bold; }
+        
+        .sensor-reports { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,51,51,0.2); }
+        .sensor-line { padding: 6px 0; font-size: 12px; line-height: 1.5; color: #ffd700; }
+        .sensor-line strong { color: #00ff88; }
+        
+        .reasons { margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.5); border-left: 2px solid #ffd700; }
+        .reasons-title { font-size: 10px; color: #ffd700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .reason { font-size: 11px; color: rgba(255,215,0,0.8); padding: 3px 0; }
+        
+        .loading { text-align: center; padding: 40px; color: #00ff88; font-size: 16px; }
+        .error { background: rgba(255,0,0,0.2); border: 1px solid #ff0000; color: #ff6666; padding: 15px; border-radius: 4px; }
+        
+        .pagination { text-align: center; margin-top: 20px; padding: 15px; }
+        .pagination button { padding: 8px 15px; margin: 0 5px; background: #ff3333; color: #000; border: none; cursor: pointer; font-weight: bold; border-radius: 3px; }
+        .pagination button:disabled { background: #666; cursor: not-allowed; }
+        .pagination span { color: #ffd700; margin: 0 10px; }
+        
+        .no-data { text-align: center; padding: 40px; color: rgba(255,215,0,0.6); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ff3333; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <h1>⚠️ AEGIS-X INTRUDER LOG</h1>
+        <p>Complete threat detection and sensor records with timestamps</p>
+    </div>
+    
+    <div class="container">
+        <!-- SUMMARY CARDS -->
+        <div class="summary">
+            <div class="summary-card">
+                <div class="summary-card-title">📊 Total Events</div>
+                <div class="summary-card-value" id="total-events">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-title">🔴 High Threats</div>
+                <div class="summary-card-value" id="high-threats">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-title">🎥 Recordings</div>
+                <div class="summary-card-value" id="total-recordings">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-title">📸 Snapshots</div>
+                <div class="summary-card-value" id="total-snapshots">0</div>
+            </div>
+        </div>
+        
+        <!-- CONTROLS -->
+        <div class="controls">
+            <select id="filter-threat" onchange="updateLogs()">
+                <option value="ALL">All Threats</option>
+                <option value="CRITICAL">🔴 Critical</option>
+                <option value="HIGH">🔴 High</option>
+                <option value="MEDIUM">🟠 Medium</option>
+                <option value="LOW">🟡 Low</option>
+                <option value="NONE">🟢 None</option>
+            </select>
+            <input type="date" id="filter-date" onchange="updateLogs()" placeholder="Filter by date">
+            <input type="number" id="limit" value="50" min="10" max="500" onchange="updateLogs()" placeholder="Items per page">
+            <button onclick="location.reload()">🔄 Refresh</button>
+            <button onclick="downloadAll()">📥 Download All</button>
+        </div>
+        
+        <!-- EVENTS LIST -->
+        <div class="events-container">
+            <div class="loading" id="loading">⏳ Loading events...</div>
+            <div id="events-list"></div>
+        </div>
+        
+        <!-- PAGINATION -->
+        <div class="pagination">
+            <button id="prev-btn" onclick="previousPage()">← Previous</button>
+            <span id="page-info">Page 1</span>
+            <button id="next-btn" onclick="nextPage()">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentPage = 0;
+        let totalEvents = 0;
+        let itemsPerPage = 50;
+        
+        function getThreatColor(level) {
+            const colors = {
+                'CRITICAL': 'threat-critical',
+                'HIGH': 'threat-high',
+                'MEDIUM': 'threat-medium',
+                'LOW': 'threat-low',
+                'NONE': 'threat-none'
+            };
+            return colors[level] || 'threat-none';
+        }
+        
+        function getRelativeTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days}d ago`;
+            
+            return date.toLocaleString();
+        }
+        
+        async function updateLogs() {
+            const filter = document.getElementById('filter-threat').value;
+            const dateFilter = document.getElementById('filter-date').value;
+            itemsPerPage = parseInt(document.getElementById('limit').value) || 50;
+            currentPage = 0;
+            loadEvents(filter, currentPage, dateFilter);
+        }
+        
+        async function loadEvents(filter = 'ALL', offset = 0, dateFilter = '') {
+            try {
+                document.getElementById('events-list').innerHTML = '';
+                document.getElementById('loading').style.display = 'block';
+                
+                let url = `/api/events-detailed?level=${filter}&limit=${itemsPerPage}&offset=${offset}`;
+                if (dateFilter) {
+                    url += `&date=${dateFilter}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (!data.events || data.events.length === 0) {
+                    document.getElementById('events-list').innerHTML = '<div class="no-data">No events found</div>';
+                    return;
+                }
+                
+                totalEvents = data.total;
+                let html = '';
+                
+                for (const item of data.events) {
+                    const date = new Date(item.timestamp);
+                    const dateStr = date.toLocaleString();
+                    const relTime = getRelativeTime(item.timestamp);
+                    const threatClass = getThreatColor(item.threat_level);
+                    
+                    // Different display based on type
+                    let eventHTML = '';
+                    
+                    if (item.type === 'event') {
+                        // Threat detection event
+                        eventHTML = `
+                            <div class="event">
+                                <div class="event-header">
+                                    <div>
+                                        <div class="event-title">🎯 ${item.event_type}</div>
+                                        <div class=\"event-timestamp\">📅 ${relTime} | ${dateStr}</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span class="event-threat ${threatClass}">${item.threat_level}</span>
+                                        <span class="event-score">Score: ${item.threat_score}/100</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="sensor-reports">
+                                    ${item.explanation.map(exp => `<div class="sensor-line">${exp}</div>`).join('')}
+                                </div>
+                                
+                                ${item.reasons.length > 0 ? `
+                                    <div class="reasons">
+                                        <div class="reasons-title">📋 Detection Reasons:</div>
+                                        ${item.reasons.map(r => `<div class="reason">✓ ${r}</div>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    } else if (item.type === 'snapshot') {
+                        // Snapshot record
+                        const sizeKB = (item.file_size / 1024).toFixed(2);
+                        eventHTML = `
+                            <div class="event" style="border-left: 4px solid #ffd700;">
+                                <div class="event-header">
+                                    <div>
+                                        <div class="event-title">📸 SNAPSHOT - ${item.sensor_type}</div>
+                                        <div class=\"event-timestamp\">📅 ${relTime} | ${dateStr}</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span class="event-threat ${threatClass}">${item.threat_level}</span>
+                                        <span style="font-size: 12px; color: #00ff88;">${sizeKB} KB</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="sensor-reports">
+                                    <div class="sensor-line">📸 Snapshot saved: <strong>${item.filename}</strong></div>
+                                    <div class="sensor-line">💾 File size: ${sizeKB} KB</div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (item.type === 'recording') {
+                        // Recording record
+                        const sizeKB = (item.file_size / 1024).toFixed(2);
+                        eventHTML = `
+                            <div class="event" style="border-left: 4px solid #ff6600;">
+                                <div class="event-header">
+                                    <div>
+                                        <div class="event-title">🎥 RECORDING</div>
+                                        <div class=\"event-timestamp\">📅 ${relTime} | ${dateStr}</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span class="event-threat ${threatClass}">${item.threat_level}</span>
+                                        <span style="font-size: 12px; color: #00ff88;">${item.duration_sec.toFixed(1)}s</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="sensor-reports">
+                                    <div class="sensor-line">🎥 Recording saved: <strong>${item.filename}</strong></div>
+                                    <div class="sensor-line">⏱️ Duration: ${item.duration_sec.toFixed(1)} seconds</div>
+                                    <div class="sensor-line">💾 File size: ${sizeKB} KB</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += eventHTML;
+                }
+                
+                document.getElementById('events-list').innerHTML = html;
+                updatePagination();
+                loadSummary();
+                
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('events-list').innerHTML = `<div class="error">❌ Error loading events: ${error.message}</div>`;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        async function loadSummary() {
+            try {
+                const response = await fetch('/api/dataset-summary');
+                const data = await response.json();
+                const summary = data.summary;
+                
+                document.getElementById('total-events').textContent = summary.total_events;
+                document.getElementById('high-threats').textContent = (summary.threat_distribution['HIGH'] || 0) + (summary.threat_distribution['CRITICAL'] || 0);
+                document.getElementById('total-recordings').textContent = summary.total_recordings;
+                document.getElementById('total-snapshots').textContent = summary.total_snapshots;
+                
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+        
+        function updatePagination() {
+            const totalPages = Math.ceil(totalEvents / itemsPerPage);
+            document.getElementById('page-info').textContent = `Page ${currentPage + 1} of ${totalPages || 1}`;
+            document.getElementById('prev-btn').disabled = currentPage === 0;
+            document.getElementById('next-btn').disabled = (currentPage + 1) * itemsPerPage >= totalEvents;
+        }
+        
+        function nextPage() {
+            const filter = document.getElementById('filter-threat').value;
+            const dateFilter = document.getElementById('filter-date').value;
+            currentPage++;
+            loadEvents(filter, currentPage * itemsPerPage, dateFilter);
+        }
+        
+        function previousPage() {
+            const filter = document.getElementById('filter-threat').value;
+            const dateFilter = document.getElementById('filter-date').value;
+            if (currentPage > 0) {
+                currentPage--;
+                loadEvents(filter, currentPage * itemsPerPage, dateFilter);
+            }
+        }
+        
+        async function downloadAll() {
+            try {
+                const response = await fetch('/api/download-dataset');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `AEGIS_intruder_log_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Download failed: ' + error.message);
+            }
+        }
+        
+        // Initial load
+        window.addEventListener('load', () => {
+            loadEvents('ALL', 0);
+        });
+    </script>
+</body>
+</html>

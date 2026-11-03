@@ -1,0 +1,47 @@
+/* ================================================
+   AEGIS-X — Local Font Declarations
+   Served by Flask from /static/fonts/
+   Fallbacks to Google CDN, then system fonts
+   ================================================ */
+
+/* Orbitron — used for all headings, labels, values */
+@font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Orbitron Regular'), local('Orbitron-Regular'),
+         url('/static/fonts/orbitron-v31-latin-regular.woff2') format('woff2'),
+         url('/static/fonts/orbitron-v31-latin-regular.woff')  format('woff');
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: local('Orbitron Bold'), local('Orbitron-Bold'),
+         url('/static/fonts/orbitron-v31-latin-700.woff2') format('woff2'),
+         url('/static/fonts/orbitron-v31-latin-700.woff')  format('woff');
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: local('Orbitron Black'), local('Orbitron-Black'),
+         url('/static/fonts/orbitron-v31-latin-900.woff2') format('woff2'),
+         url('/static/fonts/orbitron-v31-latin-900.woff')  format('woff');
+}
+
+/* Share Tech Mono — monospace for data/terminal text */
+@font-face {
+    font-family: 'Share Tech Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Share Tech Mono'), local('ShareTechMono-Regular'),
+         url('/static/fonts/share-tech-mono-v13-latin-regular.woff2') format('woff2'),
+         url('/static/fonts/share-tech-mono-v13-latin-regular.woff')  format('woff');
+}

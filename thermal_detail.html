@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS-X · THERMAL ANALYSIS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: #060010;
+            font-family: 'Share Tech Mono', monospace;
+            color: #e0d0ff;
+            overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 52px;
+            padding: 0 24px;
+            background: rgba(15, 0, 30, 0.95);
+            border-bottom: 2px solid rgba(180, 0, 255, 0.5);
+            box-shadow: 0 2px 24px rgba(180, 0, 255, 0.25);
+        }
+        .h-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #cc44ff;
+            letter-spacing: 5px;
+            text-shadow: 0 0 18px #aa00ff;
+        }
+        .h-sub {
+            font-size: 10px;
+            color: rgba(200, 150, 255, 0.5);
+            letter-spacing: 3px;
+            margin-left: 14px;
+        }
+        .h-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .back-btn {
+            padding: 6px 16px;
+            background: rgba(180, 0, 255, 0.15);
+            border: 1px solid rgba(180, 0, 255, 0.6);
+            color: #cc44ff;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: #cc44ff;
+            color: #000;
+            box-shadow: 0 0 16px #aa00ff;
+        }
+        .live-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #44ffcc;
+            box-shadow: 0 0 10px #44ffcc;
+            animation: blink 1s infinite alternate;
+        }
+        @keyframes blink { from { opacity: 0.3; } to { opacity: 1; } }
+
+        /* ── CAL BANNER ── */
+        #cal-banner {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: rgba(0, 180, 255, 0.12);
+            border-bottom: 1px solid rgba(0, 200, 255, 0.4);
+            padding: 8px 24px;
+        }
+        #cal-banner.show { display: flex; }
+        .cal-text { font-size: 12px; letter-spacing: 2px; color: #00ccff; }
+        .cal-bar-track {
+            flex: 1; max-width: 340px; height: 14px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,200,255,0.4);
+            border-radius: 7px; overflow: hidden;
+        }
+        .cal-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #0088ff, #00ffcc);
+            border-radius: 7px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 8px #00aaff;
+        }
+        #cal-pct { font-size: 12px; color: #00ffcc; min-width: 36px; text-align: right; }
+
+        /* ── MAIN LAYOUT ── */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: 1fr;
+            height: calc(100vh - 52px);
+            gap: 8px;
+            padding: 8px;
+        }
+
+        /* ── FEED PANE ── */
+        .feed-pane {
+            position: relative;
+            background: #050010;
+            border: 1px solid rgba(180, 0, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .feed-label {
+            position: absolute; top: 12px; left: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px; letter-spacing: 3px;
+            color: #cc44ff;
+            background: rgba(5, 0, 20, 0.85);
+            border: 1px solid rgba(180,0,255,0.5);
+            padding: 4px 10px; border-radius: 3px;
+        }
+        .feed-pane img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: rgba(15, 0, 30, 0.85);
+            border: 1px solid rgba(180, 0, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            backdrop-filter: blur(6px);
+        }
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: #cc44ff;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(180, 0, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        /* Status indicators */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: rgba(200, 150, 255, 0.55); letter-spacing: 1px; font-size: 11px; }
+        .stat-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            color: #fff;
+            text-shadow: 0 0 6px rgba(200,150,255,0.5);
+        }
+        .stat-val.big {
+            font-size: 26px;
+            color: #cc44ff;
+            text-shadow: 0 0 14px #aa00ff;
+        }
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .badge.ok   { background: #003300; color: #00cc44; border: 1px solid #00cc44; }
+        .badge.warn { background: #330000; color: #ff4444; border: 1px solid #ff4444; box-shadow: 0 0 8px #ff0000; }
+        .badge.info { background: #001133; color: #44aaff; border: 1px solid #44aaff; }
+
+        /* Threshold band */
+        .thr-band {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .thr-track {
+            flex: 1; height: 20px;
+            background: linear-gradient(90deg,
+                #0000ff 0%, #0088ff 20%, #00ffcc 40%,
+                #ffff00 60%, #ff8800 80%, #ff0000 100%);
+            border-radius: 4px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .thr-low-mark, .thr-high-mark {
+            position: absolute;
+            top: -18px;
+            font-size: 10px;
+            color: #00ffcc;
+            transform: translateX(-50%);
+        }
+        .thr-high-mark { color: #ff6600; }
+        .thr-line {
+            position: absolute; top: 0; bottom: 0;
+            width: 2px; opacity: 0.9;
+        }
+        .thr-line.low  { background: #00ffcc; }
+        .thr-line.high { background: #ff6600; }
+
+        /* Cluster list */
+        #cluster-list { display: flex; flex-direction: column; gap: 8px; }
+        .cluster-item {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 10px 12px;
+            border-left: 3px solid #cc44ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .cluster-item.HUMAN   { border-left-color: #00ff88; }
+        .cluster-item.CRAWLING{ border-left-color: #ff8800; }
+        .cluster-item.SMALL   { border-left-color: #00ccff; }
+        .cluster-item.OBJECT  { border-left-color: #888; }
+
+        .cl-class {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .HUMAN   .cl-class { color: #00ff88; }
+        .CRAWLING .cl-class{ color: #ff8800; }
+        .SMALL   .cl-class { color: #00ccff; }
+        .OBJECT  .cl-class { color: #aaa; }
+
+        .cl-stats { color: rgba(200,180,255,0.7); font-size: 11px; }
+        .no-clusters { color: rgba(255,255,255,0.3); font-size: 12px; text-align: center; padding: 16px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cc44ff; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div style="display:flex; align-items:center;">
+        <span class="h-title">AEGIS-X</span>
+        <span class="h-sub">THERMAL ANALYSIS MODULE</span>
+    </div>
+    <div class="h-right">
+        <div class="live-dot"></div>
+        <a class="back-btn" href="/">← MAIN DASHBOARD</a>
+    </div>
+</header>
+
+<!-- CALIBRATION BANNER -->
+<div id="cal-banner" class="show">
+    <span class="cal-text">⚙ CALIBRATING BASELINE</span>
+    <div class="cal-bar-track">
+        <div class="cal-bar-fill" id="cal-fill"></div>
+    </div>
+    <span id="cal-pct">0%</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- LIVE FEED -->
+    <div class="feed-pane">
+        <div class="feed-label">🌡 THERMAL FEED — INFRARED</div>
+        <img src="/thermal_feed" alt="Thermal Live Feed" id="thermal-img">
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+        <!-- STATUS CARD -->
+        <div class="card">
+            <div class="card-title">🔥 THERMAL STATUS</div>
+            <div class="stat-row">
+                <span class="stat-label">CALIBRATION</span>
+                <span id="st-cal" class="badge info">CALIBRATING...</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">MAX TEMP</span>
+                <span class="stat-val big" id="st-temp">--.-°C</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">AMBIENT</span>
+                <span class="stat-val" id="st-ambient">--.-°C</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">MOVEMENT</span>
+                <span id="st-mvt" class="badge ok">NO</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">CLUSTERS FOUND</span>
+                <span class="stat-val" id="st-count">0</span>
+            </div>
+        </div>
+
+        <!-- THRESHOLDING CARD -->
+        <div class="card">
+            <div class="card-title">🌡 TEMPERATURE THRESHOLDING</div>
+            <div class="stat-row">
+                <span class="stat-label">LOW GATE</span>
+                <span class="stat-val" id="th-low" style="color:#00ffcc;">--.-°C</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">HIGH GATE</span>
+                <span class="stat-val" id="th-high" style="color:#ff8800;">--.-°C</span>
+            </div>
+            <div class="thr-band">
+                <span style="font-size:10px; color:#555;">0°C</span>
+                <div class="thr-track" id="thr-track">
+                    <div class="thr-line low"  id="thr-low-line"  style="left:0%"></div>
+                    <div class="thr-line high" id="thr-high-line" style="left:100%"></div>
+                    <span class="thr-low-mark"  id="thr-low-mark"  style="left:0%">↓</span>
+                    <span class="thr-high-mark" id="thr-high-mark" style="left:100%">↓</span>
+                </div>
+                <span style="font-size:10px; color:#555;">60°C</span>
+            </div>
+        </div>
+
+        <!-- CLUSTERING CARD -->
+        <div class="card" style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column;">
+            <div class="card-title">🔵 CLUSTER ANALYSIS</div>
+            <div id="cluster-list" style="overflow-y:auto; flex:1;">
+                <div class="no-clusters">Awaiting calibration...</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let calDone = false;
+
+    function update() {
+        fetch('/data')
+            .then(r => r.json())
+            .then(d => {
+                if (!d || !d.thermal) return;
+                const t = d.thermal;
+
+                // ── Calibration ──────────────────────────
+                const pct = t.calibration_pct || 0;
+                document.getElementById('cal-fill').style.width = pct + '%';
+                document.getElementById('cal-pct').innerText = pct + '%';
+
+                if (t.calibrated) {
+                    if (!calDone) {
+                        document.getElementById('cal-banner').classList.remove('show');
+                        calDone = true;
+                    }
+                    document.getElementById('st-cal').innerText = '✔ READY';
+                    document.getElementById('st-cal').className = 'badge ok';
+                } else {
+                    document.getElementById('st-cal').innerText = `${pct}%`;
+                    document.getElementById('st-cal').className = 'badge info';
+                }
+
+                // ── Status ───────────────────────────────
+                const temp = t.temp !== undefined ? t.temp.toFixed(1) + '°C' : '--';
+                const amb  = t.ambient !== undefined ? t.ambient.toFixed(1) + '°C' : '--';
+                document.getElementById('st-temp').innerText    = temp;
+                document.getElementById('st-ambient').innerText = amb;
+                document.getElementById('st-count').innerText   = t.cluster_count || 0;
+
+                const mvtEl = document.getElementById('st-mvt');
+                if (t.movement) {
+                    mvtEl.innerText   = '⚠ YES';
+                    mvtEl.className   = 'badge warn';
+                } else {
+                    mvtEl.innerText   = 'NO';
+                    mvtEl.className   = 'badge ok';
+                }
+
+                // ── Thresholds ───────────────────────────
+                const low  = t.threshold_low  || 0;
+                const high = t.threshold_high || 42;
+                document.getElementById('th-low').innerText  = low.toFixed(1)  + '°C';
+                document.getElementById('th-high').innerText = high.toFixed(1) + '°C';
+
+                // Temperature range bar markers  (0-60°C)
+                const lowPct  = Math.min(100, Math.max(0, (low  / 60) * 100));
+                const highPct = Math.min(100, Math.max(0, (high / 60) * 100));
+                document.getElementById('thr-low-line').style.left   = lowPct  + '%';
+                document.getElementById('thr-high-line').style.left  = highPct + '%';
+                document.getElementById('thr-low-mark').style.left   = lowPct  + '%';
+                document.getElementById('thr-high-mark').style.left  = highPct + '%';
+
+                // ── Clusters ─────────────────────────────
+                const clusters = t.clusters || [];
+                const listEl   = document.getElementById('cluster-list');
+
+                if (clusters.length === 0) {
+                    listEl.innerHTML = `<div class="no-clusters">${t.calibrated ? 'No heat signatures detected.' : 'Awaiting calibration...'}</div>`;
+                } else {
+                    listEl.innerHTML = clusters.map((c, i) => `
+                        <div class="cluster-item ${c.class}">
+                            <div>
+                                <div class="cl-class">#${i+1} — ${c.class}</div>
+                                <div class="cl-stats">
+                                    🌡 ${c.temp.toFixed(1)}°C &nbsp;|&nbsp;
+                                    📐 ${c.area.toLocaleString()} px² &nbsp;|&nbsp;
+                                    📏 ${c.distance.toFixed(1)} m
+                                </div>
+                                <div class="cl-stats">
+                                    Ratio: ${c.ratio.toFixed(2)} &nbsp;|&nbsp;
+                                    Pos: (${c.cx}, ${c.cy})
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(e => console.warn('Thermal fetch error:', e));
+    }
+
+    setInterval(update, 800);
+    update();
+</script>
+</body>
+</html>

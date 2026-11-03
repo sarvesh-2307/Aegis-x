@@ -1,0 +1,470 @@
+/* ============================================================
+   AEGIS-X  ·  coverage.css  — Sensor Coverage Map Styles
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --red:     #ff3333;
+    --gold:    #ffd700;
+    --green:   #00ff88;
+    --blue:    #44aaff;
+    --bg:      #070010;
+    --bg2:     #0d0020;
+    --panel:   rgba(8, 0, 18, 0.95);
+    --border:  rgba(180, 0, 255, 0.3);
+}
+
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg);
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--gold);
+}
+
+/* ── HEADER ── */
+.cov-header {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: rgba(10, 0, 22, 0.96);
+    border-bottom: 2px solid rgba(180, 0, 255, 0.5);
+    box-shadow: 0 2px 24px rgba(160, 0, 255, 0.25);
+    flex-shrink: 0;
+    z-index: 1000;
+    position: relative;
+}
+
+.cov-hdr-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cov-back-btn {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255, 215, 0, 0.7);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+.cov-back-btn:hover { background: var(--gold); color: #000; }
+
+.cov-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: #cc44ff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px #9900ff;
+}
+
+.cov-sub {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(200, 150, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.cov-hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cov-stat-pill {
+    padding: 4px 14px;
+    border: 1px solid rgba(180, 0, 255, 0.45);
+    border-radius: 20px;
+    background: rgba(80, 0, 120, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+}
+.cov-stat-pill.danger { border-color: rgba(255, 51, 51, 0.6); background: rgba(80, 0, 0, 0.3); }
+
+.csp-label { font-size: 8px; letter-spacing: 2px; color: rgba(200,150,255,0.5); }
+.csp-val   { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; color: #cc44ff; }
+.cov-stat-pill.danger .csp-val { color: #ff4444; }
+
+.live-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    animation: blink 1s infinite alternate;
+}
+@keyframes blink { from { opacity: .3; } to { opacity: 1; } }
+
+/* ── MAIN LAYOUT ── */
+.cov-layout {
+    display: flex;
+    height: calc(100vh - 52px);
+    overflow: hidden;
+}
+
+/* ── LEFT PANEL ── */
+.cov-left-panel {
+    width: 260px;
+    min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.lp-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(180,0,255,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.lp-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #cc44ff;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(180,0,255,0.2);
+    padding-bottom: 5px;
+    margin-bottom: 2px;
+}
+
+.mode-btns { display: flex; flex-direction: column; gap: 6px; }
+.mode-btn {
+    padding: 8px 12px;
+    background: rgba(80, 0, 120, 0.2);
+    border: 1px solid rgba(180, 0, 255, 0.3);
+    color: rgba(200,150,255,0.7);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+.mode-btn:hover, .mode-btn.active {
+    background: rgba(160, 0, 255, 0.3);
+    border-color: #cc44ff;
+    color: #cc44ff;
+    box-shadow: 0 0 12px rgba(160,0,255,0.3);
+}
+
+.lp-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(200,150,255,0.45);
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.lp-select, .lp-input {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(180,0,255,0.3);
+    color: #e0c0ff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    width: 100%;
+    outline: none;
+}
+.lp-select:focus, .lp-input:focus { border-color: #cc44ff; box-shadow: 0 0 8px rgba(160,0,255,0.3); }
+
+.lp-range-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.lp-range-row input[type=range] {
+    flex: 1;
+    accent-color: #cc44ff;
+    cursor: pointer;
+}
+.lp-range-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #cc44ff;
+    min-width: 38px;
+    text-align: right;
+}
+
+/* ── ANALYSIS BARS ── */
+.analysis-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.abr-lbl { font-size: 9px; letter-spacing: 1px; color: rgba(200,150,255,.5); min-width: 50px; }
+.abr-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.abr-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease;
+}
+.abr-fill.covered { background: linear-gradient(90deg, #00aa55, #00ff88); box-shadow: 0 0 6px #00ff88; }
+.abr-fill.blind   { background: linear-gradient(90deg, #cc0000, #ff4444); box-shadow: 0 0 6px #ff3333; }
+.abr-fill.overlap { background: linear-gradient(90deg, #cc7700, #ffaa00); box-shadow: 0 0 6px #ffaa00; }
+.abr-val { font-size: 10px; font-family: 'Orbitron', sans-serif; color: var(--gold); min-width: 32px; text-align: right; }
+
+/* ── ACTION BUTTONS ── */
+.action-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+.action-btn.primary { background: rgba(80,0,160,0.5); border: 1px solid #cc44ff; color: #cc44ff; }
+.action-btn.primary:hover { background: #cc44ff; color: #000; box-shadow: 0 0 16px #cc44ff; }
+.action-btn.success { background: rgba(0,80,40,0.5); border: 1px solid #00ff88; color: #00ff88; }
+.action-btn.success:hover { background: #00ff88; color: #000; box-shadow: 0 0 16px #00ff88; }
+.action-btn.warn    { background: rgba(80,50,0,0.5); border: 1px solid #ffaa00; color: #ffaa00; }
+.action-btn.warn:hover { background: #ffaa00; color: #000; box-shadow: 0 0 16px #ffaa00; }
+.action-btn.danger  { background: rgba(80,0,0,0.5); border: 1px solid #ff3333; color: #ff3333; }
+.action-btn.danger:hover { background: #ff3333; color: #000; box-shadow: 0 0 16px #ff4444; }
+
+/* ── INSTRUCTIONS ── */
+.instruction-list { display: flex; flex-direction: column; gap: 6px; }
+.inst-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 10px;
+    color: rgba(200,150,255,0.6);
+    line-height: 1.5;
+}
+.inst-num {
+    background: rgba(160,0,255,0.3);
+    border: 1px solid #cc44ff;
+    color: #cc44ff;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* ── MAP ── */
+.cov-map-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Dark Leaflet override */
+.leaflet-container {
+    background: #080010 !important;
+    filter: brightness(0.85) saturate(0.7) hue-rotate(200deg);
+}
+
+.map-mode-badge {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    background: rgba(10,0,22,0.92);
+    border: 1px solid #cc44ff;
+    color: #cc44ff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(160,0,255,0.4);
+    pointer-events: none;
+    animation: badge-pulse 2s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(160,0,255,0.3); }
+    50%       { box-shadow: 0 0 28px rgba(160,0,255,0.7); }
+}
+
+.map-legend {
+    position: absolute;
+    bottom: 24px;
+    left: 14px;
+    z-index: 500;
+    background: rgba(8,0,18,0.9);
+    border: 1px solid rgba(180,0,255,0.35);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.leg-item { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 1px; color: rgba(200,150,255,0.7); }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── RIGHT PANEL ── */
+.cov-right-panel {
+    width: 270px;
+    min-width: 270px;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.rp-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(180,0,255,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.rp-section.rp-flex { flex: 1; min-height: 120px; overflow: hidden; }
+
+.rp-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #cc44ff;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(180,0,255,0.2);
+    padding-bottom: 5px;
+    margin-bottom: 2px;
+}
+
+/* ─ Sensor List Cards ─ */
+.sensor-list { display: flex; flex-direction: column; gap: 5px; max-height: 240px; overflow-y: auto; }
+.sensor-empty, .blind-empty, .suggest-empty {
+    font-size: 10px;
+    color: rgba(200,150,255,0.3);
+    text-align: center;
+    padding: 10px 0;
+}
+
+.sensor-card {
+    background: rgba(40,0,60,0.4);
+    border: 1px solid rgba(180,0,255,0.25);
+    border-radius: 5px;
+    padding: 7px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    position: relative;
+}
+.sc-name { font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700; color: #e0aaff; }
+.sc-detail { font-size: 9px; color: rgba(200,150,255,0.5); }
+.sc-delete {
+    position: absolute; top: 6px; right: 8px;
+    background: none; border: none;
+    color: rgba(255,51,51,0.5); cursor: pointer; font-size: 12px;
+    transition: color 0.2s;
+}
+.sc-delete:hover { color: #ff3333; }
+
+/* type badge colours */
+.sc-type-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 8px;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.sc-type-badge.thermal { background: rgba(255,68,0,.2); border:1px solid #ff4400; color:#ff8844; }
+.sc-type-badge.radar   { background: rgba(0,100,255,.2); border:1px solid #44aaff; color:#44aaff; }
+.sc-type-badge.vision  { background: rgba(0,160,80,.2);  border:1px solid #00cc66; color:#00cc66; }
+.sc-type-badge.multi   { background: rgba(180,0,255,.2); border:1px solid #cc44ff; color:#cc44ff; }
+
+/* ─ Blind Spot Cards ─ */
+.blind-list { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; flex: 1; }
+.blind-card {
+    background: rgba(60,0,0,0.5);
+    border: 1px solid rgba(255,51,51,0.35);
+    border-radius: 5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+.blind-card:hover { border-color: #ff3333; background: rgba(80,0,0,0.5); }
+.bc-label { font-family: 'Orbitron', sans-serif; font-size: 9px; color: #ff4444; letter-spacing: 2px; }
+.bc-coord { font-size: 9px; color: rgba(255,150,150,0.6); margin-top: 2px; }
+.bc-severity {
+    display: inline-block; padding: 1px 7px; border-radius: 10px;
+    font-size: 8px; font-weight: 700; margin-top: 3px;
+}
+.bc-severity.high   { background: rgba(200,0,0,.3); border: 1px solid #ff0000; color: #ff4444; }
+.bc-severity.medium { background: rgba(200,100,0,.3); border: 1px solid #ff8800; color: #ffaa00; }
+.bc-severity.low    { background: rgba(150,100,0,.3); border: 1px solid #ffdd00; color: #ffdd00; }
+
+/* ─ Suggestion Cards ─ */
+.suggestion-list { display: flex; flex-direction: column; gap: 5px; }
+.suggest-card {
+    background: rgba(0,40,80,0.5);
+    border: 1px solid rgba(68,170,255,0.35);
+    border-radius: 5px;
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.suggest-card:hover { border-color: #44aaff; background: rgba(0,60,120,0.5); }
+.sug-label { font-family: 'Orbitron', sans-serif; font-size: 9px; color: #44aaff; letter-spacing: 2px; }
+.sug-detail { font-size: 9px; color: rgba(100,180,255,0.6); margin-top: 2px; }
+.sug-add-btn {
+    margin-top: 5px;
+    padding: 4px 10px;
+    background: rgba(0,80,160,.4);
+    border: 1px solid #44aaff;
+    color: #44aaff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+.sug-add-btn:hover { background: #44aaff; color: #000; }
+
+/* ── CUSTOM LEAFLET POPUP ── */
+.leaflet-popup-content-wrapper {
+    background: rgba(8,0,18,0.97) !important;
+    border: 1px solid #cc44ff !important;
+    color: #e0aaff !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    box-shadow: 0 0 20px rgba(160,0,255,0.4) !important;
+    border-radius: 6px !important;
+}
+.leaflet-popup-tip { background: rgba(8,0,18,0.97) !important; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(160,0,255,0.5); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
